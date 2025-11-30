@@ -39,8 +39,8 @@ $allowed_origins = [
     'http://learningweb.test',
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
-    'https://learningweb.vercel.app', // Production frontend
-    'https://learningweb-git-main.vercel.app', // Vercel preview
+    'https://online-learing-web-application.vercel.app', // Production frontend
+    'https://online-learing-web-application-git-main.vercel.app', // Vercel preview
 ];
 
 $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
