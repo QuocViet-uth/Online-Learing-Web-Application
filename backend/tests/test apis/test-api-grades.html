@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Grades (Fixed v2)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .controls {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .controls h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .status-info {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .status-success { background: #4CAF50; color: white; }
+        .status-error { background: #f44336; color: white; }
+        .status-loading { background: #FF9800; color: white; }
+        
+        .stats-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .stats-box h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 8px;
+        }
+        
+        .stat-item small {
+            display: block;
+            color: #666;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .stat-item strong {
+            display: block;
+            font-size: 32px;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .grade-card {
+            background: white;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-left: 5px solid #667eea;
+            transition: all 0.3s ease;
+        }
+        
+        .grade-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        .grade-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .grade-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .grade-info-item {
+            padding: 10px;
+            background: #f5f7fa;
+            border-radius: 6px;
+        }
+        
+        .grade-info-item strong {
+            color: #667eea;
+            display: block;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+        
+        .score-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            margin: 20px 0;
+            color: white;
+        }
+        
+        .score-display .score {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .score-display .percentage {
+            font-size: 24px;
+            opacity: 0.9;
+        }
+        
+        .feedback-box {
+            background: #FFF3E0;
+            border-left: 4px solid #FF9800;
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 6px;
+        }
+        
+        .feedback-box strong {
+            color: #FF9800;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        #result {
+            background: #263238;
+            color: #A5D6A7;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+        
+        .loading::after {
+            content: '...';
+            animation: dots 1.5s steps(4, end) infinite;
+        }
+        
+        @keyframes dots {
+            0%, 20% { content: '.'; }
+            40% { content: '..'; }
+            60%, 100% { content: '...'; }
+        }
+        
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #c62828;
+            margin: 20px 0;
+        }
+        
+        .warning-message {
+            background: #fff3e0;
+            color: #e65100;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+            margin: 20px 0;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Test API - Grades (Điểm số) v2</h1>
+        
+        <div class="status-info">
+            <span class="status-badge status-loading" id="statusBadge">Chưa test</span>
+            <span id="statusText">Chọn một test case để bắt đầu</span>
+        </div>
+        
+        <div class="controls">
+            <h3>Chọn test case:</h3>
+            <div class="button-group">
+                <button onclick="getGradesByStudent(4)">✅ Điểm của Student1 (ID=4)</button>
+                <button onclick="getGradesByStudent(5)">✅ Điểm của Student2 (ID=5)</button>
+                <button onclick="getGradesByCourse(4, 1)">✅ Student1 - Khóa PHP-101</button>
+                <button onclick="getGradesByCourse(4, 2)">⚠️ Student1 - Khóa JS-201 (Chưa nộp bài)</button>
+                <button onclick="testInvalidStudent()">⚠️ Test student không tồn tại</button>
+                <button onclick="testMissingParam()">⚠️ Test thiếu parameter</button>
+            </div>
+        </div>
+        
+        <div id="grades-container"></div>
+        
+        <div class="controls">
+            <h3>📄 Raw JSON Response:</h3>
+            <div id="result">Chưa có dữ liệu...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost/online-learning/api/grades.php';
+        
+        function updateStatus(type, message) {
+            const badge = document.getElementById('statusBadge');
+            const text = document.getElementById('statusText');
+            
+            badge.className = 'status-badge status-' + type;
+            badge.textContent = type === 'success' ? '✅ Success' : type === 'error' ? '❌ Error' : '⏳ Loading';
+            text.textContent = message;
+        }
+        
+        function callAPI(params) {
+            const url = `${API_URL}?${params}`;
+            
+            updateStatus('loading', 'Đang gọi API: ' + url);
+            document.getElementById('grades-container').innerHTML = '<div class="loading">Đang tải dữ liệu</div>';
+            
+            fetch(url)
+                .then(response => {
+                    // QUAN TRỌNG: Luôn parse JSON bất kể HTTP status code
+                    return response.json().then(data => ({
+                        status: response.status,
+                        statusText: response.statusText,
+                        ok: response.ok,
+                        data: data
+                    }));
+                })
+                .then(result => {
+                    const data = result.data;
+                    
+                    // Hiển thị JSON response
+                    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                    
+                    // Kiểm tra kết quả
+                    if(result.ok && data.success) {
+                        // HTTP 200 + success: true
+                        updateStatus('success', `✅ ${data.message} (HTTP ${result.status})`);
+                        displayGrades(data);
+                    } else if(!result.ok && data.success === false) {
+                        // HTTP 400/404 + success: false (Expected error)
+                        updateStatus('error', `⚠️ ${data.message} (HTTP ${result.status})`);
+                        displayExpectedError(data, result.status);
+                    } else {
+                        // Unexpected error
+                        updateStatus('error', `❌ Lỗi không xác định (HTTP ${result.status})`);
+                        displayError(data);
+                    }
+                })
+                .catch(error => {
+                    // Network error hoặc parse JSON error
+                    updateStatus('error', '💥 Lỗi kết nối: ' + error.message);
+                    document.getElementById('result').textContent = 'Network Error: ' + error.message;
+                    document.getElementById('grades-container').innerHTML = `
+                        <div class="error-message">
+                            <strong>💥 Lỗi nghiêm trọng</strong>
+                            <p>${error.message}</p>
+                            <small>Kiểm tra xem server đã chạy chưa (XAMPP MySQL + Apache)</small>
+                        </div>
+                    `;
+                });
+        }
+        
+        function displayGrades(data) {
+            const container = document.getElementById('grades-container');
+            
+            if(data.data && data.data.length > 0) {
+                const stats = data.statistics;
+                
+                let html = `
+                    <div class="stats-box">
+                        <h3>📊 Thống kê tổng quan - Student ID: ${data.student_id}</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <small>Tổng số bài</small>
+                                <strong>${stats.total_assignments}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <small>Đã chấm</small>
+                                <strong>${stats.graded_assignments}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <small>Chưa chấm</small>
+                                <strong>${stats.ungraded_assignments}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <small>Điểm trung bình</small>
+                                <strong>${stats.average_score}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <small>Tổng điểm</small>
+                                <strong>${stats.total_score} / ${stats.total_max_score}</strong>
+                            </div>
+                            <div class="stat-item">
+                                <small>Phần trăm</small>
+                                <strong>${stats.percentage}%</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                html += '<h2 style="color: white; margin: 20px 0;">📝 Chi tiết từng bài tập</h2>';
+                
+                data.data.forEach((item, index) => {
+                    const statusEmoji = {
+                        'graded': '✅',
+                        'submitted': '⏳',
+                        'late': '⚠️'
+                    }[item.status] || '❓';
+                    
+                    const statusText = {
+                        'graded': 'Đã chấm',
+                        'submitted': 'Chờ chấm',
+                        'late': 'Nộp trễ'
+                    }[item.status] || item.status;
+                    
+                    html += `
+                        <div class="grade-card">
+                            <h3>${index + 1}. ${item.assignment_title}</h3>
+                            
+                            <div class="grade-info">
+                                <div class="grade-info-item">
+                                    <strong>📚 Khóa học</strong>
+                                    ${item.course_name}
+                                </div>
+                                <div class="grade-info-item">
+                                    <strong>📅 Nộp lúc</strong>
+                                    ${new Date(item.submit_date).toLocaleString('vi-VN')}
+                                </div>
+                                <div class="grade-info-item">
+                                    <strong>📊 Trạng thái</strong>
+                                    ${statusEmoji} ${statusText}
+                                </div>
+                            </div>
+                    `;
+                    
+                    if(item.score !== null) {
+                        const percentage = ((item.score / item.max_score) * 100).toFixed(1);
+                        html += `
+                            <div class="score-display">
+                                <div class="score">${item.score} / ${item.max_score}</div>
+                                <div class="percentage">${percentage}%</div>
+                            </div>
+                        `;
+                        
+                        if(item.feedback) {
+                            html += `
+                                <div class="feedback-box">
+                                    <strong>💬 Nhận xét của giảng viên:</strong>
+                                    <p>${item.feedback}</p>
+                                    <small style="color: #999;">Chấm lúc: ${new Date(item.graded_at).toLocaleString('vi-VN')}</small>
+                                </div>
+                            `;
+                        }
+                    } else {
+                        html += `
+                            <div class="score-display" style="background: #FF9800;">
+                                <div class="score">⏳</div>
+                                <div class="percentage">Chưa chấm điểm</div>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `</div>`;
+                });
+                
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                        </svg>
+                        <h3>Chưa có dữ liệu</h3>
+                        <p>Học viên này chưa nộp bài tập nào</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function displayExpectedError(data, httpStatus) {
+            const container = document.getElementById('grades-container');
+            
+            let icon = '⚠️';
+            let title = 'Expected Error';
+            let bgClass = 'warning-message';
+            
+            if(httpStatus === 404) {
+                icon = '🔍';
+                title = 'Không tìm thấy dữ liệu (404)';
+            } else if(httpStatus === 400) {
+                icon = '❌';
+                title = 'Yêu cầu không hợp lệ (400)';
+                bgClass = 'error-message';
+            }
+            
+            container.innerHTML = `
+                <div class="${bgClass}">
+                    <strong>${icon} ${title}</strong>
+                    <p>${data.message}</p>
+                    <small>Đây là lỗi mong đợi (expected error) - API hoạt động đúng!</small>
+                </div>
+            `;
+        }
+        
+        function displayError(data) {
+            const container = document.getElementById('grades-container');
+            container.innerHTML = `
+                <div class="error-message">
+                    <strong>❌ Lỗi không xác định</strong>
+                    <p>${data.message || 'API trả về lỗi không rõ nguyên nhân'}</p>
+                    <small>Kiểm tra console để xem chi tiết</small>
+                </div>
+            `;
+        }
+        
+        function getGradesByStudent(studentId) {
+            callAPI(`student_id=${studentId}`);
+        }
+        
+        function getGradesByCourse(studentId, courseId) {
+            callAPI(`student_id=${studentId}&course_id=${courseId}`);
+        }
+        
+        function testInvalidStudent() {
+            callAPI('student_id=9999');
+        }
+        
+        function testMissingParam() {
+            callAPI('');
+        }
+        
+        // Auto load khi trang mở
+        window.onload = function() {
+            getGradesByStudent(4);
+        };
+    </script>
+</body>
+</html>

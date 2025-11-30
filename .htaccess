@@ -1,0 +1,28 @@
+# Main .htaccess file
+# Route all API requests to backend
+# Route all other requests to frontend
+
+# Set default index file
+DirectoryIndex frontend/dist/index.html index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # API requests go to backend (keep the api/ in the path)
+    RewriteRule ^api/(.*)$ backend/index.php [L,QSA]
+
+    # Backend uploads - serve static files
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^backend/uploads/(.*)$ backend/uploads/$1 [L]
+
+    # Static assets from frontend/dist (js, css, images, etc.)
+    RewriteCond %{REQUEST_URI} \.(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$ [NC]
+    RewriteCond %{DOCUMENT_ROOT}/frontend/dist%{REQUEST_URI} -f
+    RewriteRule ^(.*)$ frontend/dist/$1 [L]
+
+    # All other requests go to frontend index.html (SPA routing)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ frontend/dist/index.html [L]
+</IfModule>

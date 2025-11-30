@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Get Courses</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #result {
+            background: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .course-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: white;
+        }
+        .course-card h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status-active { background: #4CAF50; color: white; }
+        .status-upcoming { background: #FF9800; color: white; }
+        .status-closed { background: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Test API - Get Courses</h1>
+    
+    <div class="controls">
+        <h3>Chọn API để test:</h3>
+        <button onclick="getAllCourses()">Lấy tất cả courses</button>
+        <button onclick="getCoursesByStatus('active')">Lấy courses đang mở</button>
+        <button onclick="getCoursesByStatus('upcoming')">Lấy courses sắp mở</button>
+        <button onclick="getCoursesByTeacher(2)">Lấy courses của teacher1</button>
+    </div>
+    
+    <div id="courses-container"></div>
+    
+    <h3>📄 Raw JSON Response:</h3>
+    <div id="result">Chưa có dữ liệu...</div>
+
+    <script>
+        const API_URL = 'http://localhost/online-learning/api/get-courses.php';
+        
+        // Hàm gọi API
+        function callAPI(params = '') {
+            const url = params ? `${API_URL}?${params}` : API_URL;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    // Hiển thị raw JSON
+                    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                    
+                    // Hiển thị courses dạng cards
+                    displayCourses(data);
+                })
+                .catch(error => {
+                    document.getElementById('result').textContent = 'Lỗi: ' + error;
+                    document.getElementById('courses-container').innerHTML = '<p style="color: red;">❌ Lỗi khi gọi API!</p>';
+                });
+        }
+        
+        // Hiển thị courses
+        function displayCourses(data) {
+            const container = document.getElementById('courses-container');
+            
+            if(data.success && data.data.length > 0) {
+                let html = `<h2>📚 Danh sách khóa học (${data.total})</h2>`;
+                
+                data.data.forEach(course => {
+                    const statusClass = `status-${course.status}`;
+                    const priceFormatted = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(course.price);
+                    
+                    html += `
+                        <div class="course-card">
+                            <h3>📖 ${course.title}</h3>
+                            <p><strong>Course Name:</strong> ${course.course_name}</p>
+                            <p><strong>Mô tả:</strong> ${course.description}</p>
+                            <p><strong>💰 Giá:</strong> ${priceFormatted}</p>
+                            <p><strong>👨‍🏫 Giảng viên:</strong> ${course.teacher_name}</p>
+                            <p><strong>📅 Thời gian:</strong> ${course.start_date} → ${course.end_date}</p>
+                            <p><strong>Trạng thái:</strong> <span class="status-badge ${statusClass}">${course.status.toUpperCase()}</span></p>
+                        </div>
+                    `;
+                });
+                
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p>❌ Không có khóa học nào!</p>';
+            }
+        }
+        
+        // Các hàm gọi API
+        function getAllCourses() {
+            callAPI();
+        }
+        
+        function getCoursesByStatus(status) {
+            callAPI(`status=${status}`);
+        }
+        
+        function getCoursesByTeacher(teacherId) {
+            callAPI(`teacher_id=${teacherId}`);
+        }
+        
+        // Load dữ liệu khi trang load
+        window.onload = function() {
+            getAllCourses();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test API - Get Lessons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .controls {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 3px;
+        }
+        button:hover {
+            background: #0b7dda;
+        }
+        .lesson-card {
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            background: white;
+            border-left: 4px solid #2196F3;
+        }
+        .lesson-card h3 {
+            margin-top: 0;
+            color: #2196F3;
+        }
+        .order-badge {
+            background: #2196F3;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        #result {
+            background: #f9f9f9;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .stats {
+            background: #E3F2FD;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎓 Test API - Get Lessons</h1>
+    
+    <div class="controls">
+        <h3>Chọn API để test:</h3>
+        <button onclick="getLessonsByCourse(1)">Lấy bài giảng của khóa PHP-101</button>
+        <button onclick="getLessonsByCourse(2)">Lấy bài giảng của khóa JS-201</button>
+        <button onclick="getLessonDetail(1)">Lấy chi tiết bài giảng ID=1</button>
+        <button onclick="testMissingParam()">Test thiếu parameter</button>
+    </div>
+    
+    <div id="lessons-container"></div>
+    
+    <h3>📄 Raw JSON Response:</h3>
+    <div id="result">Chưa có dữ liệu...</div>
+
+    <script>
+        const API_URL = 'http://localhost/online-learning/api/get-lessons.php';
+        
+        function callAPI(params) {
+            const url = `${API_URL}?${params}`;
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                    displayLessons(data);
+                })
+                .catch(error => {
+                    document.getElementById('result').textContent = 'Lỗi: ' + error;
+                    document.getElementById('lessons-container').innerHTML = '<p style="color: red;">❌ Lỗi khi gọi API!</p>';
+                });
+        }
+        
+        function displayLessons(data) {
+            const container = document.getElementById('lessons-container');
+            
+            if(data.success) {
+                if(data.data && !Array.isArray(data.data)) {
+                    // Chi tiết 1 bài giảng
+                    const lesson = data.data;
+                    container.innerHTML = `
+                        <h2>📖 Chi tiết bài giảng</h2>
+                        <div class="lesson-card">
+                            <h3>Bài ${lesson.order_number}: ${lesson.title}</h3>
+                            <p><strong>Khóa học:</strong> ${lesson.course_name}</p>
+                            <p><strong>Nội dung:</strong><br>${lesson.content}</p>
+                            <p><strong>🎥 Video:</strong> <a href="${lesson.video_url}" target="_blank">Xem video</a></p>
+                            <p><strong>⏱️ Thời lượng:</strong> ${lesson.duration} phút</p>
+                        </div>
+                    `;
+                } else if(data.data && data.data.length > 0) {
+                    // Danh sách bài giảng
+                    let html = `
+                        <h2>📚 Danh sách bài giảng</h2>
+                        <div class="stats">
+                            <p><strong>📊 Thống kê:</strong></p>
+                            <p>Tổng số bài: <strong>${data.statistics.total_lessons}</strong></p>
+                            <p>Tổng thời lượng: <strong>${data.statistics.total_duration}</strong></p>
+                        </div>
+                    `;
+                    
+                    data.data.forEach(lesson => {
+                        html += `
+                            <div class="lesson-card">
+                                <span class="order-badge">Bài ${lesson.order_number}</span>
+                                <h3>${lesson.title}</h3>
+                                <p>${lesson.content}</p>
+                                <p><strong>⏱️ Thời lượng:</strong> ${lesson.duration} phút</p>
+                                <p><strong>🎥 Video:</strong> <a href="${lesson.video_url}" target="_blank">Xem</a></p>
+                            </div>
+                        `;
+                    });
+                    
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = '<p>❌ Không có bài giảng nào!</p>';
+                }
+            } else {
+                container.innerHTML = `<p style="color: red;">❌ ${data.message}</p>`;
+            }
+        }
+        
+        function getLessonsByCourse(courseId) {
+            callAPI(`course_id=${courseId}`);
+        }
+        
+        function getLessonDetail(lessonId) {
+            callAPI(`lesson_id=${lessonId}`);
+        }
+        
+        function testMissingParam() {
+            callAPI('');
+        }
+        
+        window.onload = function() {
+            getLessonsByCourse(1);
+        };
+    </script>
+</body>
+</html>

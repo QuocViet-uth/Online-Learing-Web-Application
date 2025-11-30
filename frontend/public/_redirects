@@ -1,0 +1,6 @@
+# Redirects for SPA (Single Page Application)
+# This file is used by Render and other static hosting services
+# to handle client-side routing
+
+/*    /index.html   200
+
